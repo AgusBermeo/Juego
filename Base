@@ -1,0 +1,131 @@
+import shiffman.box2d.*;
+import org.jbox2d.common.*;
+import org.jbox2d.dynamics.joints.*;
+import org.jbox2d.collision.shapes.*;
+import org.jbox2d.collision.shapes.Shape;
+import org.jbox2d.common.*;
+import org.jbox2d.dynamics.*;
+import org.jbox2d.dynamics.contacts.*;
+
+// Referencia al mundo box2d
+Box2DProcessing box2d;
+
+Pacman pacman;
+ArrayList<Pared> pared;
+
+float posX = 50;
+float posY = 100;
+
+void setup() {
+  size(530, 620);
+  smooth();
+  
+  // Inicializa la fisica box2d y crea el mundo con colisiones
+  box2d = new Box2DProcessing(this);
+  box2d.createWorld();
+  box2d.setGravity(0, 0);
+  box2d.listenForCollisions();
+  
+  pacman = new Pacman(100,100,12,5);
+  
+  pared = new ArrayList<Pared>();
+  pared.add(new Pared(width/2, 0, width, 20));   //01
+  pared.add(new Pared(width/2, 0, 30, 200));     //02
+  pared.add(new Pared(5, 100, 10, 200));         //03
+  pared.add(new Pared(70, 70, 60, 60));          //04
+  pared.add(new Pared(175, 70, 90, 60));         //05
+  pared.add(new Pared(355, 70, 90, 60));         //06
+  pared.add(new Pared(460, 70, 60, 60));         //07
+  pared.add(new Pared(525, 100, 10, 200));       //08
+  pared.add(new Pared(70, 145, 60, 30));         //09
+  pared.add(new Pared(145, 205, 30, 150));       //10
+  pared.add(new Pared(265, 145, 150, 30));       //11
+  pared.add(new Pared(385, 205, 30, 150));       //12
+  pared.add(new Pared(460, 145, 60, 30));        //13
+  pared.add(new Pared(50, 235, 100, 90));        //14
+  pared.add(new Pared(190, 205, 60, 30));        //15
+  pared.add(new Pared(340, 205, 60, 30));        //16
+  pared.add(new Pared(480, 235, 100, 90));       //17
+  pared.add(new Pared(50, 355, 100, 90));        //18
+  pared.add(new Pared(145, 355, 30, 90));        //19
+  pared.add(new Pared(385, 355, 30, 90));        //20
+  pared.add(new Pared(480, 355, 100, 90));       //21
+  pared.add(new Pared(265, 385, 150, 30));       //22
+  pared.add(new Pared(5, 505, 10, 230));         //23
+  pared.add(new Pared(25, 505, 30, 30));         //24
+  pared.add(new Pared(525, 505, 10, 230));       //25
+  pared.add(new Pared(505, 505, 30, 30));        //26
+  pared.add(new Pared(70, 445, 60, 30));         //27
+  pared.add(new Pared(175, 445, 90, 30));        //28
+  pared.add(new Pared(265, 430, 30, 60));        //29
+  pared.add(new Pared(355, 445, 90, 30));        //30
+  pared.add(new Pared(460, 445, 60, 30));        //31
+  pared.add(new Pared(85, 490, 30, 60));         //32
+  pared.add(new Pared(445, 490, 30, 60));        //33
+  pared.add(new Pared(145, 520, 30, 60));        //34
+  pared.add(new Pared(265, 505, 150, 30));       //35
+  pared.add(new Pared(385, 520, 30, 60));        //36
+  pared.add(new Pared(130, 565, 180, 30));       //37
+  pared.add(new Pared(265, 550, 30, 60));        //38
+  pared.add(new Pared(400, 565, 180, 30));       //39
+  pared.add(new Pared(width/2, 615, width, 10)); //40
+  pared.add(new Pared(265, 190, 30, 60));        //41
+  pared.add(new Pared(220, 255, 60, 10));        //42
+  pared.add(new Pared(310, 255, 60, 10));        //43
+  pared.add(new Pared(195, 295, 10, 90));        //44
+  pared.add(new Pared(335, 295, 10, 90));        //45
+  pared.add(new Pared(265, 335, 150, 10));       //46
+  
+}
+
+void draw() {
+  PImage img;
+  img = loadImage("BG.jpg");
+  background(img);
+  
+  box2d.step();
+  
+  pacman.display();
+  //pacman.move();
+  
+  for (Pared wall: pared) {
+    wall.display();
+  }
+  
+  if (keyCode == UP){
+      box2d.setGravity(15, 0);
+    } else if (keyCode == DOWN){
+      box2d.setGravity(0, -15);
+    } else if (keyCode == RIGHT){
+      box2d.setGravity(15, 0);
+    } else if (keyCode == LEFT){
+      box2d.setGravity(-15, 0);
+    }
+  
+}
+
+// Collision event functions!
+void beginContact(Contact cp) {
+  // Get both fixtures
+  Fixture f1 = cp.getFixtureA();
+  Fixture f2 = cp.getFixtureB();
+  // Get both bodies
+  Body b1 = f1.getBody();
+  Body b2 = f2.getBody();
+
+  // Get our objects that reference these bodies
+  Object o1 = b1.getUserData();
+  Object o2 = b2.getUserData();
+
+  if (o1.getClass() == Pacman.class && o2.getClass() == Pacman.class) {
+    Pacman p1 = (Pacman) o1;
+    p1.change();
+    Pacman p2 = (Pacman) o2;
+    p2.change();
+  }
+
+}
+
+// Objects stop touching each other
+void endContact(Contact cp) {
+}
